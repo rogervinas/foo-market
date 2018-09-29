@@ -1,4 +1,23 @@
 # Foo Market Application
 
-Ads with Domain Events & EventSourcing
- 
+Ads with Domain Events & Event Sourcing
+
+## Run locally
+
+```
+./gradlew bootRun
+``` 
+
+## Test locally
+
+Using [HTTPie](https://httpie.org/):
+
+* Create Ad
+  ```
+  http POST localhost:8080/ad name=name1 description=desc1 price=10
+  ```
+
+* Get Ad
+  ```
+  http localhost:8080/ad/1
+  ```
