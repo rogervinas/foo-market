@@ -21,3 +21,8 @@ Using [HTTPie](https://httpie.org/):
   ```
   http localhost:8080/ad/1
   ```
+  
+* Update Ad price
+  ```
+  http PUT localhost:8080/ad/1/price price=20
+  ```
