@@ -2,6 +2,8 @@ package com.rogervinas.foomarket.ads.entities;
 
 import com.rogervinas.foomarket.ads.events.AdCreatedEvent;
 import com.rogervinas.foomarket.ads.events.AdPriceUpdatedEvent;
+import com.rogervinas.foomarket.ads.events.AdProductAddedEvent;
+import com.rogervinas.foomarket.ads.events.AdProductRemovedEvent;
 import com.rogervinas.foomarket.ads.events.AdRemovedEvent;
 import com.rogervinas.foomarket.ads.exceptions.AdNotFoundException;
 import com.rogervinas.foomarket.ads.store.AdEventStore;
@@ -16,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -111,5 +114,51 @@ public class AdTest {
 
     assertThatThrownBy(() -> Ad.get(eventStore, ID_3))
         .isInstanceOfSatisfying(AdNotFoundException.class, e -> assertThat(e.getId() == ID_3));
+  }
+
+  @Test
+  public void should_add_product_to_ad() {
+    when(eventStore.load(ID_4)).thenReturn(Stream.of(new AdCreatedEvent(ID_4, "name4", "desc4", 40)));
+
+    Ad ad = Ad.get(eventStore, ID_4).addProduct("product1");
+
+    assertThat(ad.getProducts()).containsExactly("product1");
+
+    verify(eventStore).save(eq(new AdProductAddedEvent(ID_4, "product1")));
+  }
+
+  @Test
+  public void should_remove_product_from_ad() {
+    when(eventStore.load(ID_4)).thenReturn(Stream.of(
+        new AdCreatedEvent(ID_4, "name4", "desc4", 40),
+        new AdProductAddedEvent(ID_4, "product1"),
+        new AdProductAddedEvent(ID_4, "product2"),
+        new AdProductAddedEvent(ID_4, "product3")
+    ));
+
+    Ad ad = Ad.get(eventStore, ID_4).removeProduct("product2");
+
+    assertThat(ad.getProducts()).containsExactly("product1", "product3");
+
+    verify(eventStore).save(eq(new AdProductRemovedEvent(ID_4, "product2")));
+  }
+
+  @Test
+  public void should_get_ad_with_products_added_and_removed() {
+    when(eventStore.load(ID_4)).thenReturn(Stream.of(
+        new AdCreatedEvent(ID_4, "name4", "desc4", 40),
+        new AdProductAddedEvent(ID_4, "product1"),
+        new AdProductAddedEvent(ID_4, "product2"),
+        new AdProductAddedEvent(ID_4, "product3"),
+        new AdProductRemovedEvent(ID_4, "product2")
+    ));
+
+    Ad ad = Ad.get(eventStore, ID_4);
+
+    assertThat(ad.getId()).isEqualTo(ID_4);
+    assertThat(ad.getName()).isEqualTo("name4");
+    assertThat(ad.getDescription()).isEqualTo("desc4");
+    assertThat(ad.getPrice()).isEqualTo(40);
+    assertThat(ad.getProducts()).containsExactly("product1", "product3");
   }
 }
