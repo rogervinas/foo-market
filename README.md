@@ -35,6 +35,16 @@ Using [HTTPie](https://httpie.org/):
   http PUT localhost:8080/ad/1/price price=20
   ```
 
+* Add Ad product
+  ```
+  http PUT localhost:8080/ad/1/product product=publish
+  ```
+  
+* Remove Ad product
+  ```
+  http DELETE localhost:8080/ad/1/product product=publish
+  ```
+  
 * Get published Ads
   ```
   http localhost:8080/ads

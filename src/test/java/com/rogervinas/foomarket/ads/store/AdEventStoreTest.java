@@ -47,7 +47,7 @@ public abstract class AdEventStoreTest {
     AdTestEvent event1 = new AdTestEvent(ID_1);
     eventStore.save(event1);
 
-    assertThat(eventStore.load(1)).containsExactly(event1);
+    assertThat(eventStore.load(ID_1)).containsExactly(event1);
   }
 
   @Test

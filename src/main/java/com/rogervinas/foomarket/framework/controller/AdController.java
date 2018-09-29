@@ -3,6 +3,7 @@ package com.rogervinas.foomarket.framework.controller;
 import com.rogervinas.foomarket.ads.entities.Ad;
 import com.rogervinas.foomarket.ads.store.AdEventStore;
 import com.rogervinas.foomarket.framework.controller.dto.AdCreateRequest;
+import com.rogervinas.foomarket.framework.controller.dto.AdProductRequest;
 import com.rogervinas.foomarket.framework.controller.dto.AdResponse;
 import com.rogervinas.foomarket.framework.controller.dto.AdUpdatePriceRequest;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -42,6 +43,18 @@ public class AdController {
   @PutMapping("/ad/{id}/price")
   public AdResponse adUpdatePrice(@PathVariable("id") int id, @RequestBody AdUpdatePriceRequest adUpdatePrice) {
     Ad ad = Ad.get(eventStore, id).setPrice(adUpdatePrice.price);
+    return AdResponse.from(ad);
+  }
+
+  @PutMapping("/ad/{id}/product")
+  public AdResponse adAddProduct(@PathVariable("id") int id, @RequestBody AdProductRequest adProduct) {
+    Ad ad = Ad.get(eventStore, id).addProduct(adProduct.product);
+    return AdResponse.from(ad);
+  }
+
+  @DeleteMapping("/ad/{id}/product")
+  public AdResponse adRemoveProduct(@PathVariable("id") int id, @RequestBody AdProductRequest adProduct) {
+    Ad ad = Ad.get(eventStore, id).removeProduct(adProduct.product);
     return AdResponse.from(ad);
   }
 }
