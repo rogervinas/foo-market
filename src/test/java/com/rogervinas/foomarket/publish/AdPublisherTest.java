@@ -2,6 +2,8 @@ package com.rogervinas.foomarket.publish;
 
 import com.rogervinas.foomarket.ads.events.AdCreatedEvent;
 import com.rogervinas.foomarket.ads.events.AdPriceUpdatedEvent;
+import com.rogervinas.foomarket.ads.events.AdProductAddedEvent;
+import com.rogervinas.foomarket.ads.events.AdProductRemovedEvent;
 import com.rogervinas.foomarket.ads.events.AdRemovedEvent;
 import com.rogervinas.foomarket.ads.store.AdEventConsumer;
 import com.rogervinas.foomarket.ads.store.AdEventStore;
@@ -31,42 +33,62 @@ public class AdPublisherTest {
   }
 
   @Test
-  public void should_return_empty() {
-    assertThat(publisher.getAdViews()).isEmpty();
+  public void should_return_empty_if_no_events() {
+    assertThat(publisher.getPublications()).isEmpty();
   }
 
   @Test
-  public void should_return_one_adView() {
+  public void should_return_empty_if_no_published_ads() {
     consumer.accept(new AdCreatedEvent(100, "name1", "desc1", 10.5F));
-    assertThat(publisher.getAdViews())
+    consumer.accept(new AdProductAddedEvent(100, "foo"));
+    assertThat(publisher.getPublications()).isEmpty();
+  }
+
+  @Test
+  public void should_return_published_ads() {
+    consumer.accept(new AdCreatedEvent(100, "name1", "desc1", 10.5F));
+    consumer.accept(new AdProductAddedEvent(100, "publish"));
+    assertThat(publisher.getPublications())
         .containsExactly("name1 [desc1] (10.5)");
   }
 
   @Test
-  public void should_return_one_adView_with_updatedPrice() {
+  public void should_return_published_ads_with_updated_price() {
     consumer.accept(new AdCreatedEvent(100, "name1", "desc1", 10.5F));
+    consumer.accept(new AdProductAddedEvent(100, "publish"));
     consumer.accept(new AdPriceUpdatedEvent(100, 10.5F, 20.8F));
-    assertThat(publisher.getAdViews())
+    assertThat(publisher.getPublications())
         .containsExactly("name1 [desc1] (20.8)");
   }
 
   @Test
-  public void should_return_empty_after_remove() {
+  public void should_not_return_unpublished_ads() {
     consumer.accept(new AdCreatedEvent(100, "name1", "desc1", 10.5F));
-    consumer.accept(new AdPriceUpdatedEvent(100, 10.5F, 20.8F));
-    consumer.accept(new AdRemovedEvent(100));
-    assertThat(publisher.getAdViews()).isEmpty();
+    consumer.accept(new AdProductAddedEvent(100, "publish"));
+    consumer.accept(new AdProductRemovedEvent(100, "publish"));
+    assertThat(publisher.getPublications()).isEmpty();
   }
 
   @Test
-  public void should_return_many_adViews() {
+  public void should_not_return_removed_ads() {
+    consumer.accept(new AdCreatedEvent(100, "name1", "desc1", 10.5F));
+    consumer.accept(new AdProductAddedEvent(100, "publish"));
+    consumer.accept(new AdRemovedEvent(100));
+    assertThat(publisher.getPublications()).isEmpty();
+  }
+
+  @Test
+  public void should_return_many_published_ads() {
     consumer.accept(new AdCreatedEvent(100, "name1", "desc1", 10.5F));
     consumer.accept(new AdPriceUpdatedEvent(100, 10.5F, 20.8F));
+    consumer.accept(new AdProductAddedEvent(100, "publish"));
     consumer.accept(new AdCreatedEvent(200, "name2", "desc2", 20.2F));
     consumer.accept(new AdCreatedEvent(300, "name3", "desc3", 30.6F));
     consumer.accept(new AdRemovedEvent(100));
     consumer.accept(new AdPriceUpdatedEvent(200, 20.2F, 40.4F));
-    assertThat(publisher.getAdViews())
+    consumer.accept(new AdProductAddedEvent(200, "publish"));
+    consumer.accept(new AdProductAddedEvent(300, "publish"));
+    assertThat(publisher.getPublications())
         .containsExactly(
             "name2 [desc2] (40.4)",
             "name3 [desc3] (30.6)"

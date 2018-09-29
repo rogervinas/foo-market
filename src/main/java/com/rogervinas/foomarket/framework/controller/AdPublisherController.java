@@ -16,6 +16,6 @@ public class AdPublisherController {
 
   @GetMapping("/ads")
   public String getAds() {
-    return publisher.getAdViews().collect(Collectors.joining("\n"));
+    return publisher.getPublications().collect(Collectors.joining("\n"));
   }
 }
