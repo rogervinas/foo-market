@@ -26,3 +26,8 @@ Using [HTTPie](https://httpie.org/):
   ```
   http PUT localhost:8080/ad/1/price price=20
   ```
+
+* Get published Ads
+  ```
+  http localhost:8080/ads
+  ```
