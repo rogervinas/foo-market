@@ -12,9 +12,12 @@ Ads with Domain Events & Event Sourcing
 
 Using [HTTPie](https://httpie.org/):
 
-* Create Ad
+* Create Ads
   ```
-  http POST localhost:8080/ad name=name1 description=desc1 price=10
+  http POST localhost:8080/ad name=Car description='A race car' price=100
+  http POST localhost:8080/ad name=Bike description='A mountain bike' price=15
+  http POST localhost:8080/ad name=Computer description='A linux computer' price=30
+  http POST localhost:8080/ad name=Phone description='A nokia phone' price=50
   ```
 
 * Get Ad
