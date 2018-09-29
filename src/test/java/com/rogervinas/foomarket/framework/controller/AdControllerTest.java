@@ -2,6 +2,7 @@ package com.rogervinas.foomarket.framework.controller;
 
 import com.rogervinas.foomarket.ads.events.AdCreatedEvent;
 import com.rogervinas.foomarket.ads.events.AdPriceUpdatedEvent;
+import com.rogervinas.foomarket.ads.events.AdRemovedEvent;
 import com.rogervinas.foomarket.ads.store.AdEventStore;
 import java.util.stream.Stream;
 import org.junit.Test;
@@ -15,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -71,6 +73,18 @@ public class AdControllerTest {
         .andExpect(content()
             .json(AD_RESPONSE_10, true)
         );
+  }
+
+  @Test
+  public void should_delete_ad() throws Exception {
+    AdCreatedEvent createdEvent = new AdCreatedEvent(ID, NAME, DESC, PRICE_10);
+    when(eventStore.load(ID)).thenReturn(Stream.of(createdEvent));
+
+    mockMvc.perform(delete("/ad/" + ID))
+        .andDo(print())
+        .andExpect(status().isOk());
+
+    verify(eventStore).save(eq(new AdRemovedEvent(ID)));
   }
 
   @Test

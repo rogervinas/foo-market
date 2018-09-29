@@ -5,6 +5,7 @@ import com.rogervinas.foomarket.ads.store.AdEventStore;
 import com.rogervinas.foomarket.framework.controller.dto.AdCreateRequest;
 import com.rogervinas.foomarket.framework.controller.dto.AdResponse;
 import com.rogervinas.foomarket.framework.controller.dto.AdUpdatePriceRequest;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,6 +32,11 @@ public class AdController {
   public AdResponse adGet(@PathVariable("id") int id) {
     Ad ad = Ad.get(eventStore, id);
     return AdResponse.from(ad);
+  }
+
+  @DeleteMapping("/ad/{id}")
+  public void adRemove(@PathVariable("id") int id) {
+    Ad.get(eventStore, id).remove();
   }
 
   @PutMapping("/ad/{id}/price")

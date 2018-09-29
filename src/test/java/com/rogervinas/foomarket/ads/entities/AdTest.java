@@ -24,6 +24,7 @@ public class AdTest {
   private static final int ID_1 = 100;
   private static final int ID_2 = 200;
   private static final int ID_3 = 300;
+  private static final int ID_4 = 400;
 
   @Mock
   private AdEventStore eventStore;
@@ -62,6 +63,18 @@ public class AdTest {
   }
 
   @Test
+  public void should_create_and_remove_ad() {
+    when(eventStore.nextId()).thenReturn(ID_1);
+
+    Ad.create(eventStore, "name1", "desc1", 10).remove();
+
+    InOrder verify = inOrder(eventStore);
+    verify.verify(eventStore).save(eq(new AdCreatedEvent(ID_1, "name1", "desc1", 10)));
+    verify.verify(eventStore).save(eq(new AdRemovedEvent(ID_1)));
+    verify.verifyNoMoreInteractions();
+  }
+
+  @Test
   public void should_get_ad_with_one_event() {
     when(eventStore.load(ID_2)).thenReturn(Stream.of(new AdCreatedEvent(ID_2, "name2", "desc2", 20)));
 
@@ -89,7 +102,7 @@ public class AdTest {
   }
 
   @Test
-  public void should_throw_exception_when_ad_is_removed() {
+  public void should_throw_exception_when_getting_a_removed_ad() {
     when(eventStore.load(ID_3)).thenReturn(Stream.of(
         new AdCreatedEvent(ID_3, "name3", "desc3", 30),
         new AdPriceUpdatedEvent(ID_3, 30, 300),

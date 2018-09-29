@@ -41,6 +41,10 @@ public class Ad {
     return ad;
   }
 
+  public void remove() {
+    eventStore.save(new AdRemovedEvent(id));
+  }
+
   public int getId() {
     return id;
   }
