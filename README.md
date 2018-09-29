@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/rogervinas/foo-market.svg?branch=master)](https://travis-ci.com/rogervinas/foo-market)
+
 # Foo Market Application
 
 Ads with Domain Events & Event Sourcing
