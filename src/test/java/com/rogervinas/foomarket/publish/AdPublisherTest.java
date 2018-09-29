@@ -78,19 +78,43 @@ public class AdPublisherTest {
   }
 
   @Test
-  public void should_return_many_published_ads() {
+  public void should_return_published_top_ads() {
+    consumer.accept(new AdCreatedEvent(100, "name1", "desc1", 10.5F));
+    consumer.accept(new AdProductAddedEvent(100, "publish"));
+    consumer.accept(new AdProductAddedEvent(100, "top"));
+    assertThat(publisher.getPublications())
+        .containsExactly("name1 [desc1] (10.5) *TOP*");
+  }
+
+  @Test
+  public void should_return_published_former_top_ads() {
+    consumer.accept(new AdCreatedEvent(100, "name1", "desc1", 10.5F));
+    consumer.accept(new AdProductAddedEvent(100, "publish"));
+    consumer.accept(new AdProductAddedEvent(100, "top"));
+    consumer.accept(new AdProductRemovedEvent(100, "top"));
+    assertThat(publisher.getPublications())
+        .containsExactly("name1 [desc1] (10.5)");
+  }
+
+  @Test
+  public void should_return_many_published_ads_tops_first() {
     consumer.accept(new AdCreatedEvent(100, "name1", "desc1", 10.5F));
     consumer.accept(new AdPriceUpdatedEvent(100, 10.5F, 20.8F));
     consumer.accept(new AdProductAddedEvent(100, "publish"));
     consumer.accept(new AdCreatedEvent(200, "name2", "desc2", 20.2F));
     consumer.accept(new AdCreatedEvent(300, "name3", "desc3", 30.6F));
+    consumer.accept(new AdCreatedEvent(400, "name4", "desc4", 40.9F));
     consumer.accept(new AdRemovedEvent(100));
     consumer.accept(new AdPriceUpdatedEvent(200, 20.2F, 40.4F));
+    consumer.accept(new AdProductAddedEvent(400, "publish"));
+    consumer.accept(new AdProductAddedEvent(400, "top"));
     consumer.accept(new AdProductAddedEvent(200, "publish"));
+    consumer.accept(new AdProductAddedEvent(200, "top"));
     consumer.accept(new AdProductAddedEvent(300, "publish"));
     assertThat(publisher.getPublications())
         .containsExactly(
-            "name2 [desc2] (40.4)",
+            "name2 [desc2] (40.4) *TOP*",
+            "name4 [desc4] (40.9) *TOP*",
             "name3 [desc3] (30.6)"
         );
   }

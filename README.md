@@ -40,11 +40,13 @@ Using [HTTPie](https://httpie.org/):
 * Add Ad product
   ```
   http PUT localhost:8080/ad/1/product product=publish
+  http PUT localhost:8080/ad/1/product product=top
   ```
   
 * Remove Ad product
   ```
   http DELETE localhost:8080/ad/1/product product=publish
+  http DELETE localhost:8080/ad/1/product product=top
   ```
   
 * Get published Ads
