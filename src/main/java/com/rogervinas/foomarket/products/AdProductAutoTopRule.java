@@ -2,7 +2,7 @@ package com.rogervinas.foomarket.products;
 
 import com.rogervinas.foomarket.ads.events.AdBaseEvent;
 import com.rogervinas.foomarket.ads.events.AdProductAddedEvent;
-import com.rogervinas.foomarket.ads.store.AdEventStore;
+import com.rogervinas.foomarket.ads.service.AdEventStream;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -14,17 +14,17 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
 
-public class ProductAutoTopRule {
+public class AdProductAutoTopRule {
 
-  private final Logger LOGGER = LoggerFactory.getLogger(ProductAutoTopRule.class);
+  private final Logger LOGGER = LoggerFactory.getLogger(AdProductAutoTopRule.class);
 
   private final RestTemplate rest = new RestTemplate();
   private final int port;
 
   private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
 
-  public ProductAutoTopRule(AdEventStore eventStore, int port) {
-    eventStore.subscribe(this::consume);
+  public AdProductAutoTopRule(AdEventStream eventStream, int port) {
+    eventStream.subscribe(this::consume);
     this.port = port;
   }
 

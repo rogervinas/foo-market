@@ -1,14 +1,7 @@
 package com.rogervinas.foomarket.framework.controller;
 
-import com.rogervinas.foomarket.ads.events.AdBaseEvent;
-import com.rogervinas.foomarket.ads.events.AdCreatedEvent;
-import com.rogervinas.foomarket.ads.events.AdPriceUpdatedEvent;
-import com.rogervinas.foomarket.ads.events.AdProductAddedEvent;
-import com.rogervinas.foomarket.ads.events.AdProductRemovedEvent;
-import com.rogervinas.foomarket.ads.events.AdRemovedEvent;
-import com.rogervinas.foomarket.ads.store.AdEventStore;
-import java.util.ArrayList;
-import java.util.List;
+import com.rogervinas.foomarket.ads.entities.Ad;
+import com.rogervinas.foomarket.ads.service.AdService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,6 +11,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static java.util.Arrays.asList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -37,19 +31,23 @@ public class AdControllerTest {
   private MockMvc mockMvc;
 
   @MockBean
-  private AdEventStore eventStore;
+  private AdService service;
 
-  private List<AdBaseEvent> events100;
+  private Ad ad100;
 
   @Before
   public void before() {
-    events100 = new ArrayList<>();
-    when(eventStore.load(100)).thenAnswer(a -> events100.stream());
+    ad100 = Ad.Builder.anAd()
+        .withId(100)
+        .withName("name1")
+        .withDescription("desc1")
+        .withPrice(10.0F)
+        .build();
+    when(service.get(eq(100))).thenReturn(ad100);
   }
-
   @Test
   public void should_create_ad() throws Exception {
-    when(eventStore.nextId()).thenReturn(100);
+    when(service.create(eq("name1"), eq("desc1"), eq(10.0F))).thenReturn(ad100);
 
     mockMvc.perform(
           post("/ad")
@@ -60,14 +58,10 @@ public class AdControllerTest {
         .andExpect(content()
             .json("{\"id\":100,\"name\":\"name1\",\"description\":\"desc1\",\"price\":10.0,\"products\":[]}", true)
         );
-
-    verify(eventStore).save(eq(new AdCreatedEvent(100, "name1", "desc1", 10)));
   }
 
   @Test
   public void should_get_ad() throws Exception {
-    given_ad_100_is_created();
-
     mockMvc.perform(get("/ad/100"))
         .andDo(print())
         .andExpect(status().isOk())
@@ -78,18 +72,17 @@ public class AdControllerTest {
 
   @Test
   public void should_delete_ad() throws Exception {
-    given_ad_100_is_created();
-
     mockMvc.perform(delete("/ad/100"))
         .andDo(print())
         .andExpect(status().isOk());
 
-    verify(eventStore).save(eq(new AdRemovedEvent(100)));
+    verify(service).remove(eq(ad100));
   }
 
   @Test
   public void should_update_ad_price() throws Exception {
-    given_ad_100_is_created();
+    when(service.updatePrice(eq(ad100), eq(20.0F)))
+        .thenReturn(Ad.Builder.anAd(ad100).withPrice(20.0F).build());
 
     mockMvc.perform(put("/ad/100/price")
           .contentType("application/json")
@@ -100,12 +93,13 @@ public class AdControllerTest {
             .json("{\"id\":100,\"name\":\"name1\",\"description\":\"desc1\",\"price\":20.0,\"products\":[]}", true)
         );
 
-    verify(eventStore).save(eq(new AdPriceUpdatedEvent(100, 10, 20)));
+    verify(service).updatePrice(eq(ad100), eq(20.0F));
   }
 
   @Test
   public void should_add_ad_product() throws Exception {
-    given_ad_100_is_created();
+    when(service.addProduct(eq(ad100), eq("product1")))
+        .thenReturn(Ad.Builder.anAd(ad100).withProducts(asList("product1")).build());
 
     mockMvc.perform(put("/ad/100/product")
         .contentType("application/json")
@@ -116,13 +110,13 @@ public class AdControllerTest {
             .json("{\"id\":100,\"name\":\"name1\",\"description\":\"desc1\",\"price\":10.0,\"products\":[\"product1\"]}", true)
         );
 
-    verify(eventStore).save(eq(new AdProductAddedEvent(100, "product1")));
+    verify(service).addProduct(eq(ad100), eq("product1"));
   }
 
   @Test
   public void should_remove_ad_product() throws Exception {
-    given_ad_100_is_created();
-    and_ad_100_has_products("product1", "product2", "product3");
+    when(service.removeProduct(eq(ad100), eq("product2")))
+        .thenReturn(Ad.Builder.anAd(ad100).withProducts(asList("product1", "product3")).build());
 
     mockMvc.perform(delete("/ad/100/product")
         .contentType("application/json")
@@ -133,16 +127,6 @@ public class AdControllerTest {
             .json("{\"id\":100,\"name\":\"name1\",\"description\":\"desc1\",\"price\":10.0,\"products\":[\"product1\",\"product3\"]}", true)
         );
 
-    verify(eventStore).save(eq(new AdProductRemovedEvent(100, "product2")));
-  }
-
-  private void given_ad_100_is_created() {
-    events100.add(new AdCreatedEvent(100, "name1", "desc1", 10));
-  }
-
-  private void and_ad_100_has_products(String... products) {
-    for(String product : products) {
-      events100.add(new AdProductAddedEvent(100, product));
-    }
+    verify(service).removeProduct(eq(ad100), eq("product2"));
   }
 }

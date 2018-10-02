@@ -1,4 +1,4 @@
-package com.rogervinas.foomarket.publish;
+package com.rogervinas.foomarket.publications;
 
 import com.rogervinas.foomarket.ads.events.AdBaseEvent;
 import com.rogervinas.foomarket.ads.events.AdCreatedEvent;
@@ -6,7 +6,7 @@ import com.rogervinas.foomarket.ads.events.AdPriceUpdatedEvent;
 import com.rogervinas.foomarket.ads.events.AdProductAddedEvent;
 import com.rogervinas.foomarket.ads.events.AdProductRemovedEvent;
 import com.rogervinas.foomarket.ads.events.AdRemovedEvent;
-import com.rogervinas.foomarket.ads.store.AdEventStore;
+import com.rogervinas.foomarket.ads.service.AdEventStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -18,8 +18,8 @@ public class AdPublisher {
 
   private final List<AdView> adViews = new ArrayList<>();
 
-  public AdPublisher(AdEventStore eventStore) {
-    eventStore.subscribe(this::consume);
+  public AdPublisher(AdEventStream eventStream) {
+    eventStream.subscribe(this::consume);
   }
 
   public Stream<String> getPublications() {

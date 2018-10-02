@@ -1,7 +1,7 @@
 package com.rogervinas.foomarket.framework.configuration;
 
-import com.rogervinas.foomarket.ads.store.AdEventStore;
-import com.rogervinas.foomarket.publish.AdPublisher;
+import com.rogervinas.foomarket.ads.service.AdEventStream;
+import com.rogervinas.foomarket.publications.AdPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 public class AdPublisherConfiguration {
 
   @Bean
-  public AdPublisher adPublisher(AdEventStore eventStore) {
-    return new AdPublisher(eventStore);
+  public AdPublisher adPublisher(AdEventStream eventStream) {
+    return new AdPublisher(eventStream);
   }
 }

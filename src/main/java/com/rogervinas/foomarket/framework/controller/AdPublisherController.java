@@ -1,6 +1,6 @@
 package com.rogervinas.foomarket.framework.controller;
 
-import com.rogervinas.foomarket.publish.AdPublisher;
+import com.rogervinas.foomarket.publications.AdPublisher;
 import java.util.stream.Collectors;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;

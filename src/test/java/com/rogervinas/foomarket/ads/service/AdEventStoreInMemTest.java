@@ -1,4 +1,4 @@
-package com.rogervinas.foomarket.ads.store;
+package com.rogervinas.foomarket.ads.service;
 
 public class AdEventStoreInMemTest extends AdEventStoreTest {
 

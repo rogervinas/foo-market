@@ -1,54 +1,17 @@
 package com.rogervinas.foomarket.ads.entities;
 
-import com.rogervinas.foomarket.ads.events.AdBaseEvent;
-import com.rogervinas.foomarket.ads.events.AdCreatedEvent;
-import com.rogervinas.foomarket.ads.events.AdPriceUpdatedEvent;
-import com.rogervinas.foomarket.ads.events.AdProductAddedEvent;
-import com.rogervinas.foomarket.ads.events.AdProductRemovedEvent;
-import com.rogervinas.foomarket.ads.events.AdRemovedEvent;
-import com.rogervinas.foomarket.ads.exceptions.AdNotFoundException;
-import com.rogervinas.foomarket.ads.store.AdEventStore;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static java.util.Collections.emptyList;
+import static java.util.Collections.unmodifiableList;
 
 public class Ad {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(Ad.class);
-
-  private final AdEventStore eventStore;
-  private final int id;
-
+  private int id;
   private String name;
   private String description;
   private float price;
-  private final List<String> products = new ArrayList<>();
-
-  private Ad(AdEventStore eventStore, int id) {
-    this.eventStore = eventStore;
-    this.id = id;
-  }
-
-  public static Ad create(AdEventStore eventStore, String name, String description, float price) {
-    Ad ad = new Ad(eventStore, eventStore.nextId());
-    ad.name = name;
-    ad.description = description;
-    ad.price = price;
-    eventStore.save(new AdCreatedEvent(ad.id, ad.name, ad.description, ad.price));
-    return ad;
-  }
-
-  public static Ad get(AdEventStore eventStore, int id) throws AdNotFoundException {
-    Ad ad = new Ad(eventStore, id);
-    eventStore.load(id).forEach(ad::apply);
-    return ad;
-  }
-
-  public void remove() {
-    eventStore.save(new AdRemovedEvent(id));
-  }
+  private List<String> products;
 
   public int getId() {
     return id;
@@ -62,72 +25,71 @@ public class Ad {
     return description;
   }
 
-  public Ad setPrice(float price) {
-    float oldPrice = this.price;
-    this.price = price;
-    eventStore.save(new AdPriceUpdatedEvent(id, oldPrice, price));
-    return this;
-  }
-
   public float getPrice() {
     return price;
   }
 
-  public Ad addProduct(String product) {
-    if (!products.contains(product)) {
-      products.add(product);
-      eventStore.save(new AdProductAddedEvent(id, product));
-    }
-    return this;
-  }
-
-  public Ad removeProduct(String product) {
-    if (products.contains(product)) {
-      products.remove(product);
-      eventStore.save(new AdProductRemovedEvent(id, product));
-    }
-    return this;
-  }
-
   public List<String> getProducts() {
-    return Collections.unmodifiableList(products);
+    return products;
   }
 
-  private void apply(AdBaseEvent event) throws AdNotFoundException {
-    if (event instanceof AdCreatedEvent) {
-      apply((AdCreatedEvent) event);
-    } else if (event instanceof AdPriceUpdatedEvent) {
-      apply((AdPriceUpdatedEvent) event);
-    } else if (event instanceof AdRemovedEvent) {
-      apply((AdRemovedEvent) event);
-    } else if (event instanceof AdProductAddedEvent) {
-      apply((AdProductAddedEvent) event);
-    } else if (event instanceof AdProductRemovedEvent) {
-      apply((AdProductRemovedEvent) event);
-    } else {
-      LOGGER.error("Cannot apply " + event.getClass());
+  public static final class Builder {
+    private int id;
+    private String name;
+    private String description;
+    private float price;
+    private List<String> products;
+
+    private Builder() {
     }
-  }
 
-  private void apply(AdCreatedEvent event) {
-    this.name = event.getName();
-    this.description = event.getDescription();
-    this.price = event.getPrice();
-  }
+    public static Builder anAd(Ad ad) {
+      Builder builder = new Builder();
+      builder.id = ad.getId();
+      builder.name = ad.getName();
+      builder.description = ad.getDescription();
+      builder.price = ad.getPrice();
+      builder.products = ad.getProducts();
+      return builder;
+    }
 
-  private void apply(AdPriceUpdatedEvent event) {
-    this.price = event.getNewPrice();
-  }
+    public static Builder anAd() {
+      return new Builder();
+    }
 
-  private void apply(AdRemovedEvent event) {
-    throw new AdNotFoundException(event.getId());
-  }
+    public Builder withId(int id) {
+      this.id = id;
+      return this;
+    }
 
-  private void apply(AdProductAddedEvent event) {
-    this.products.add(event.getProduct());
-  }
+    public Builder withName(String name) {
+      this.name = name;
+      return this;
+    }
 
-  private void apply(AdProductRemovedEvent event) {
-    this.products.remove(event.getProduct());
+    public Builder withDescription(String description) {
+      this.description = description;
+      return this;
+    }
+
+    public Builder withPrice(float price) {
+      this.price = price;
+      return this;
+    }
+
+    public Builder withProducts(List<String> products) {
+      this.products = products;
+      return this;
+    }
+
+    public Ad build() {
+      Ad ad = new Ad();
+      ad.id = this.id;
+      ad.price = this.price;
+      ad.description = this.description;
+      ad.products = this.products == null ? emptyList() : unmodifiableList(this.products);
+      ad.name = this.name;
+      return ad;
+    }
   }
 }

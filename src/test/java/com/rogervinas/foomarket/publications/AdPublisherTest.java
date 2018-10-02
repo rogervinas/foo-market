@@ -1,12 +1,12 @@
-package com.rogervinas.foomarket.publish;
+package com.rogervinas.foomarket.publications;
 
 import com.rogervinas.foomarket.ads.events.AdCreatedEvent;
 import com.rogervinas.foomarket.ads.events.AdPriceUpdatedEvent;
 import com.rogervinas.foomarket.ads.events.AdProductAddedEvent;
 import com.rogervinas.foomarket.ads.events.AdProductRemovedEvent;
 import com.rogervinas.foomarket.ads.events.AdRemovedEvent;
-import com.rogervinas.foomarket.ads.store.AdEventConsumer;
-import com.rogervinas.foomarket.ads.store.AdEventStore;
+import com.rogervinas.foomarket.ads.service.AdEventConsumer;
+import com.rogervinas.foomarket.ads.service.AdEventStream;
 import java.util.function.Supplier;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,9 +26,9 @@ public class AdPublisherTest {
   @Before
   public void before() {
     AdEventConsumerCaptor consumerCaptor = new AdEventConsumerCaptor();
-    AdEventStore eventStore = mock(AdEventStore.class);
-    doAnswer(consumerCaptor).when(eventStore).subscribe(any());
-    publisher = new AdPublisher(eventStore);
+    AdEventStream eventStream = mock(AdEventStream.class);
+    doAnswer(consumerCaptor).when(eventStream).subscribe(any());
+    publisher = new AdPublisher(eventStream);
     consumer = consumerCaptor.get();
   }
 

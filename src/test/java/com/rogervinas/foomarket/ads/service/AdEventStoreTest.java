@@ -1,18 +1,12 @@
-package com.rogervinas.foomarket.ads.store;
+package com.rogervinas.foomarket.ads.service;
 
 import com.rogervinas.foomarket.ads.events.AdBaseEvent;
 import com.rogervinas.foomarket.ads.exceptions.AdNotFoundException;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InOrder;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.same;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 public abstract class AdEventStoreTest {
 
@@ -84,66 +78,6 @@ public abstract class AdEventStoreTest {
         .containsExactly(event21, event22);
     assertThat(eventStore.load(ID_3))
         .containsExactly(event31, event32, event33);
-  }
-
-  @Test
-  public void should_notify_one_event_to_one_consumer() {
-    AdEventConsumer consumer1 = mock(AdEventConsumer.class);
-    eventStore.subscribe(consumer1);
-
-    AdTestEvent event1 = new AdTestEvent(ID_1);
-    eventStore.save(event1);
-
-    verify(consumer1).accept(same(event1));
-    verifyNoMoreInteractions(consumer1);
-  }
-
-  @Test
-  public void should_notify_many_events_to_one_consumer() {
-    AdEventConsumer consumer1 = mock(AdEventConsumer.class);
-    eventStore.subscribe(consumer1);
-
-    AdTestEvent event1 = new AdTestEvent(ID_1);
-    AdTestEvent event2 = new AdTestEvent(ID_2);
-    AdTestEvent event3 = new AdTestEvent(ID_3);
-    eventStore.save(event1);
-    eventStore.save(event2);
-    eventStore.save(event3);
-
-    InOrder verify = inOrder(consumer1);
-    verify.verify(consumer1).accept(same(event1));
-    verify.verify(consumer1).accept(same(event2));
-    verify.verify(consumer1).accept(same(event3));
-    verify.verifyNoMoreInteractions();
-  }
-
-  @Test
-  public void should_notify_many_events_to_many_consumers() {
-    AdEventConsumer consumer1 = mock(AdEventConsumer.class);
-    AdEventConsumer consumer2 = mock(AdEventConsumer.class);
-    AdEventConsumer consumer3 = mock(AdEventConsumer.class);
-    eventStore.subscribe(consumer1);
-    eventStore.subscribe(consumer2);
-    eventStore.subscribe(consumer3);
-
-    AdTestEvent event1 = new AdTestEvent(ID_1);
-    AdTestEvent event2 = new AdTestEvent(ID_2);
-    AdTestEvent event3 = new AdTestEvent(ID_3);
-    eventStore.save(event1);
-    eventStore.save(event2);
-    eventStore.save(event3);
-
-    InOrder verify = inOrder(consumer1, consumer2, consumer3);
-    verify.verify(consumer1).accept(same(event1));
-    verify.verify(consumer2).accept(same(event1));
-    verify.verify(consumer3).accept(same(event1));
-    verify.verify(consumer1).accept(same(event2));
-    verify.verify(consumer2).accept(same(event2));
-    verify.verify(consumer3).accept(same(event2));
-    verify.verify(consumer1).accept(same(event3));
-    verify.verify(consumer2).accept(same(event3));
-    verify.verify(consumer3).accept(same(event3));
-    verify.verifyNoMoreInteractions();
   }
 
   private class AdTestEvent extends AdBaseEvent {
